@@ -1,63 +1,137 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, push, onValue, remove } from "firebase/database";
-import "./style.css";
+import {
+  getDatabase,
+  ref,
+  push,
+  onValue,
+  set,
+  remove,
+} from "firebase/database";
+import { v4 as uuidv4 } from "uuid";
+const uuid = uuidv4();
 const firebaseConfig = {
   databaseURL:
     "https://scrimba-app-default-rtdb.europe-west1.firebasedatabase.app",
 };
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
-const shoppingListInDB = ref(database, "movies");
+const endorsementListInDB = ref(database, "endorsment");
 
-const inputFieldEl = document.getElementById("input-field");
-const addButtonEl = document.getElementById("add-button");
-const shoppingListEl = document.getElementById("shopping-list");
+const inputTextEl = document.getElementById("input-text");
+const inputFromEl = document.getElementById("input-from");
+const inputToEl = document.getElementById("input-to");
+const postButtonEl = document.getElementById("add-button");
+const endorsementListEl = document.getElementById("endorsement-list");
 
-addButtonEl.addEventListener("click", function () {
-  let inputValue = inputFieldEl.value;
+postButtonEl.addEventListener("click", function () {
+  let inputText = inputTextEl.value;
+  let inputFrom = inputFromEl.value;
+  let inputTo = inputToEl.value;
 
-  push(shoppingListInDB, inputValue);
-
-  clearInputFieldEl();
+  set(ref(database, "endorsment/" + uuidv4()), {
+    text: inputText,
+    from: inputFrom,
+    to: inputTo,
+    likes: 0,
+    date: Date.now(),
+  })
+    .then(() => {
+      console.log("Data saved successfully");
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+  clearInputField();
 });
 
-onValue(shoppingListInDB, function (snapshot) {
+onValue(endorsementListInDB, function (snapshot) {
   if (snapshot.exists()) {
-    let itemsArray = Object.entries(snapshot.val());
+    let endorsementArray = Object.entries(snapshot.val());
 
-    clearShoppingListEl();
+    endorsementArray.sort((a, b) => b[1].date - a[1].date);
 
-    for (let i = 0; i < itemsArray.length; i++) {
-      let currentItem = itemsArray[i];
+    console.log(endorsementArray);
+    clearEndorsementListEl();
 
-      appendItemToShoppingListEl(currentItem);
-    }
-  } else {
-    shoppingListEl.innerHTML = "No items in your list yet...";
+    endorsementArray.forEach((endorsement) => {
+      appendItemstoList(endorsement);
+    });
   }
 });
 
-function clearShoppingListEl() {
-  shoppingListEl.innerHTML = "";
+function clearInputField() {
+  inputTextEl.value = "";
+  inputFromEl.value = "";
+  inputToEl.value = "";
 }
 
-function clearInputFieldEl() {
-  inputFieldEl.value = "";
+function clearEndorsementListEl() {
+  endorsementListEl.innerHTML = "";
 }
 
-function appendItemToShoppingListEl(item) {
-  let itemID = item[0];
-  let itemValue = item[1];
+function appendItemstoList(item) {
+  let itemId = item[0];
+  let itemData = item[1];
 
-  let newEl = document.createElement("li");
+  let endorsementItemEl = document.createElement("div");
 
-  newEl.textContent = itemValue;
+  endorsementItemEl.innerHTML = `
 
-  newEl.addEventListener("click", function () {
-    let exactLocationOfItemInDB = ref(database, `movies/${itemID}`);
+  <div id=${itemId} class="endorsement-container">
+    <div class="endorsement-item__to">
+       ${itemData.to}
+    </div>
+    <div class="endorsement-item__text">
+    "${itemData.text}"
+    </div>
+    <div class="endorsement-item__from">
+      ${itemData.from}
+    </div>
 
-    remove(exactLocationOfItemInDB);
+    <div class="endorsement-footer">
+    <div class="endorsement-item__date">
+    ${new Date(itemData.date).toLocaleString("en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    })}
+  </div>
+  
+      <div class="endorsement-item__likes">
+        <i class="fa-solid fa-heart"></i>
+        <span>${itemData.likes}</span>
+      </div>
+    </div>
+
+
+     
+  </div>
+
+`;
+  endorsementListEl.appendChild(endorsementItemEl);
+
+  // let deleteButtonEl = endorsementItemEl.querySelector("button");
+  // deleteButtonEl.addEventListener("click", function () {
+  //   remove(ref(database, "endorsment/" + itemId))
+  //     .then(() => {
+  //       console.log("Data removed successfully");
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     });
+  // });
+
+  let likeButtonEl = endorsementItemEl.querySelector(".fa-heart");
+  likeButtonEl.addEventListener("click", function () {
+    set(ref(database, "endorsment/" + itemId + "/likes"), itemData.likes + 1)
+      .then(() => {
+        console.log("Data saved successfully");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   });
-
-  shoppingListEl.append(newEl);
 }

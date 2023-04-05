@@ -4,15 +4,30 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
+    <link rel="stylesheet" href="/style.css" />
+    <title>ApplauseWorks</title>
   </head>
   <body>
     <div class="container">
-      <img src="assets/cat.png" />
-      <input type="text" id="input-field" placeholder="Bread" />
-      <button id="add-button">Add to cart</button>
-      <ul id="shopping-list"></ul>
+      <img src="assets/freddie.png" />
+      <h1>We are the Champions</h1>
+      <textarea
+        type="text"
+        id="input-text"
+        placeholder="Type your endorsement here..."
+      ></textarea>
+      <div class="input-container">
+        <input type="text" id="input-from" placeholder="From" />
+        <input type="text" id="input-to" placeholder="To" />
+      </div>
+      <button id="add-button">Post</button>
+      <h2>✦ Endorsements ✦</h2>
+      <div id="endorsement-list"></div>
     </div>
+    <script
+      src="https://kit.fontawesome.com/e831b7fea1.js"
+      crossorigin="anonymous"
+    ></script>
     <script type="module" src="/main.js"></script>
   </body>
 </html>
